@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>To Do List</title>
+    <style>
+        body{
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background-color: black;
+        }
+        table{
+            margin-top: 50px;
+            width: 100%;
+        }
+        #create{
+            padding: 0 30px;
+        }
+        th,td{
+            border: 1px solid black;
+            border-collapse: collapse;
+        }
+        .cr{
+            width: 50%;
+            display: flex;
+            justify-content: space-around;
+            padding: 20px 0;
+            height: 50px;
+            align-items: center;
+        }
+        body>h1{
+            width: 100%;
+            background-color: aquamarine;
+            margin-bottom: 50px;
+        }
+        tr>th:nth-child(1){
+            background-color: rgb(149, 255, 255);
+        }
+        tr>td:nth-child(1){
+            background-color: rgb(149, 255, 255);
+        }
+        tr>th:nth-child(2){
+            background-color: rgb(255, 163, 163);
+        }
+        tr>td:nth-child(2){
+            background-color: rgb(255, 163, 163);
+        }
+        tr>th:nth-child(3){
+            background-color: rgb(174, 255, 163);
+        }
+        tr>td:nth-child(3){
+            background-color: rgb(174, 255, 163);
+        }
+        #create{
+            background-color: aquamarine;
+        }
+        .cr>*{
+            height: 20px;
+        }
+        .cr>button{
+            height: 30px;
+            background-color: rgb(174, 255, 163);
+            padding: 0px 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Todo List</h1>
+    <button id="create"><h3>Add new Event</h3></button>
+    <div class="cr"></div>
+    <table>
+        <thead>
+            <tr>
+                <th><h1>Work To Do</h1></th>
+                <th><h1>Delete</h1></th>
+                <th><h1>Update</h1></th>
+            </tr>
+        </thead>
+        <tbody>
+            
+        </tbody>
+    </table>
+</body>
+</html>
+<script>
+    let tbody=document.querySelector("tbody");
+    let getData=async(url)=>{
+        try {
+            let res=await fetch(url);
+            let data=await res.json();
+            return data;
+        } catch (err) {
+            console.log(err);
+        }
+    }
+    let initFunc=async()=>{
+        let data=await getData(`http://localhost:3000/todolist`);
+        dispData(data,tbody);
+    }
+    initFunc();
+    let dispData=(data,parent)=>{
+        parent.innerHTML="";
+        data.forEach(el => {
+            let tr=document.createElement("tr");
+            let td1=document.createElement("td");
+            let h2=document.createElement("h2");
+            h2.textContent=el.work;
+            td1.append(h2);
+            let td2=document.createElement("td");
+            let td3=document.createElement("td");
+            let del=document.createElement("button");
+            del.textContent="Delete";
+            del.setAttribute("id","delete");
+            let upd=document.createElement("button");
+            upd.textContent="Update";
+            upd.setAttribute("id","update");
+            h2.addEventListener("click",()=>{
+                td1.innerHTML=``;
+                let s="text"+el.id+"";
+                td1.innerHTML=`<input type="text" id="${s}" value="${el.work}">`;
+                console.log(td1);
+            })
+            del.addEventListener("click",async()=>{
+                let res=await fetch(`http://localhost:3000/todolist/${el.id}`,{
+                    'method':"DELETE"
+                });
+                window.location.reload();
+            })
+            upd.addEventListener("click",async()=>{
+                let t=td1.innerHTML+"";
+                let p=t.substring(0,4);
+                console.log(p=="<h2>",typeof p,p);
+                if(p=="<h2>"){
+                    td1.innerHTML=``;
+                    let s="text"+el.id+"";
+                    td1.innerHTML=`<input type="text" id="${s}" value="${el.work}">`;
+                    console.log(td1);
+                }else{
+                    let s="text"+el.id+"";
+                    let q={
+                        "work":document.getElementById(s).value
+                    }
+                    let link=`http://localhost:3000/todolist/${el.id}`;
+                    console.log(link);
+                    let res=await fetch(link,{
+                        method:"PUT",
+                        body:JSON.stringify(q),
+                        headers:{
+                            "Content-Type":"application/json"
+                        }
+                    });
+                    window.location.reload();
+                }
+            })
+            td2.append(del);
+            td3.append(upd);
+            tr.append(td1,td2,td3);
+            parent.append(tr);
+        });
+    }
+    document.querySelector("#create").addEventListener("click",()=>{
+        let cr=document.querySelector(".cr");
+        let input=document.createElement("input");
+        input.setAttribute("type","text");
+        input.setAttribute("id","crInput");
+        input.setAttribute("placeholder","Work to do...");
+        let btn=document.createElement("button");
+        btn.setAttribute("id","crBtn");
+        btn.textContent="Add to List";
+        btn.addEventListener("click",async()=>{
+            try {
+                let obj={
+                    work:document.querySelector("#crInput").value
+                }
+                console.log(document.querySelector("#crInput").value);
+                let res=await fetch("http://localhost:3000/todolist",{
+                    method:"POST",
+                    body:JSON.stringify(obj),
+                    headers:{
+                        "Content-Type":"application/json"
+                    }
+                })
+                window.location.reload();
+            } catch (err) {
+                console.log(err);
+            }
+        })
+        cr.append(input,btn);
+        console.log(input,btn);
+    })
+</script>
