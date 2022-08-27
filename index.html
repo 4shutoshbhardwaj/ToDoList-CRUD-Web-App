@@ -126,6 +126,7 @@
                 console.log(td1);
             })
             del.addEventListener("click",async()=>{
+//                 delete call
                 let res=await fetch(`http://localhost:3000/todolist/${el.id}`,{
                     'method':"DELETE"
                 });
